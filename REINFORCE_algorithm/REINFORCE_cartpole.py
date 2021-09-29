@@ -95,8 +95,6 @@ def plot_reward(pi):
     ax2.set_ylabel('Avg. return (Sliding window: 100)')
     plt.show()
 
-#test
-
 def main():
     env = gym.make('CartPole-v0') #Create the OPEN_AI environment
     in_dim = env.observation_space.shape[0] #4
