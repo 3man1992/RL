@@ -8,7 +8,7 @@ import torch.nn as nn
 import torch.optim as optim
 import matplotlib.pyplot as plt
 
-#Global variables
+#Global variables test
 gamma = 0.999
 episodes = 200
 
@@ -94,6 +94,8 @@ def plot_reward(pi):
     ax2.plot(means)
     ax2.set_ylabel('Avg. return (Sliding window: 100)')
     plt.show()
+
+#test
 
 def main():
     env = gym.make('CartPole-v0') #Create the OPEN_AI environment
