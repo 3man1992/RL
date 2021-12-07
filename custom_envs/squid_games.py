@@ -24,14 +24,28 @@ class SquidGames(Env):
         self.trial_length = 100
 
     def step(self, action):
+        """Actions"""
+        #Don't move
         if action == 0:
-
-        #Apply action
-        self.state += action - 1
+            pass
+        #Move down
+        if action == 1:
+            self.state = np.roll(self.state, [1,0], axis = (0,1))
+        #Move up
+        if action == 2:
+            self.state = np.roll(self.state, [-1,0], axis = (0,1))
+        #Move left
+        if action == 3:
+            self.state = np.roll(self.state, [0,-1], axis = (0,1))
+        #Move right
+        if action == 4:
+            self.state = np.roll(self.state, [0, 1], axis = (0,1))
 
         #Reduce trial length by 1 second
         self.trial_length -= 1
+
         #Calculate reward - need to implement
+        reward = 0
 
         #Check if trial is finished
         if self.trial_length <= 0:
@@ -43,27 +57,33 @@ class SquidGames(Env):
         return (self.state, reward, done, info)
 
     def render(self):
-        pass
+        img = Image.fromarray(self.state, "RGB")
+        img = img.resize((500, 500))
+        cv2.imshow("Custom RL env", np.array(img))
+        #waits for user to press any key
+        #(this is necessary to avoid Python kernel form crashing)
+        cv2.waitKey(0)
+        #closing all open windows
+        cv2.destroyAllWindows()
 
     def reset(self):
         #Starting state
         self.state[random.randint(0,grid_shape-1)][random.randint(0,grid_shape-1)] = (255, 175, 0)
         #Length of task
         self.trial_length = 100
-
 env = SquidGames()
-print(env.state)
+# print(env.state)
 # print(env.observation_space.sample())
 
-# episodes = 10
-# for episode in range(1, episodes+1):
-#     state = env.reset()
-#     done = False
-#     score = 0
-#
-#     while not done:
-#         env.render()
-#         action = env.action_space.sample()
-#         n_state, reward, done, info = env.step(action)
-#         score+=reward
-#     print('Episode:{} Score:{}'.format(episode, score))
+episodes = 10
+for episode in range(1, episodes+1):
+    state = env.reset()
+    done = False
+    score = 0
+
+    while not done:
+        env.render()
+        action = env.action_space.sample()
+        n_state, reward, done, info = env.step(action)
+        score+=reward
+    print('Episode:{} Score:{}'.format(episode, score))
