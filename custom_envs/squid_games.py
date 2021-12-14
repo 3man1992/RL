@@ -1,4 +1,6 @@
-"""Note that is an MDP implementation such that state == observation, this is not a POMDP"""
+"""Note that is an MDP implementation such that state == observation, this is not a POMDP
+   meaning the agent can see all aspects of the state which maybe unavailable in a biological
+   agent"""
 
 #Test implementation of a squid games
 from gym import Env
@@ -18,10 +20,11 @@ import torch.optim as optim
 grid_shape = 10
 show_every = 10
 gamma = 0.999
-episodes = 100
+episodes = 200
 trial_rewards = []
-learning_rate = 0.01
+learning_rate = 0.001
 trial_length = 100
+epsilon = 0.9
 
 #Define the environment
 class SquidGames(Env):
@@ -57,11 +60,11 @@ class SquidGames(Env):
 
         #Calculate reward - need to implement
         if np.any(self.state[0][:]):
-            reward = 1
-        elif np.any(self.state[-1][:]):
-            reward = random.randint(0, 2)
+            reward = 10
+        # elif np.any(self.state[-1][:]):
+        #     reward = random.randint(0, 10)
         else:
-            reward = 0
+            reward = -3
 
         #Conditions for finishing a trial
         if self.trial_length <= 0:
@@ -122,6 +125,8 @@ class Pi(nn.Module):
         layers = [
             nn.Linear(in_dim, 128),
             nn.ReLU(),
+            nn.Linear(128, 128),
+            nn.ReLU(),
             nn.Linear(128, out_dim),
         ] #Alter this variable to modify the architecture of the neural network
         self.model = nn.Sequential(*layers) #Creates the model with an architecture as defined by the order of the variable layers
@@ -140,7 +145,15 @@ class Pi(nn.Module):
         return pdparam
 
     #Define the method to produce actions
-    def act(self, state):
+    def act(self, state, env):
+        # #Explore
+        # if np.random.uniform(0, 1) > epsilon:
+        #     action = env.action_space.sample() #Choose a random action
+        #     log_prob = pd.log_prob(action) # log_prob of pi(a|s)
+        #     self.log_probs.append(log_prob) # store for training
+        #     return action
+        # #Exploit
+        # else:
         tensor_state = torch.from_numpy(state.astype(np.float32)) # Creates a Tensor from a numpy.ndarray
         tensor_state = torch.flatten(tensor_state)
         # print('Flatten tensor state', tensor_state)
@@ -154,7 +167,7 @@ class Pi(nn.Module):
         self.log_probs.append(log_prob) # store for training
         return action #Returns an action
 
-# #Train archy the blob mouse
+#Train archy the blob mouse
 def train(pi, optimizer):
     #Inner gradient-ascent loop of REINFORCE algorithm
     T = len(pi.rewards)
@@ -192,7 +205,7 @@ def main():
         episode_reward = 0
         while not done:
             env.render()
-            action = pi.act(state)
+            action = pi.act(state, env)
             n_state, reward, done, info = env.step(action)
             pi.rewards.append(reward)
             episode_reward += reward #For plotting purposes
